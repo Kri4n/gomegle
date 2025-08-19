@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Real Time Chat App</title>
+    <style>
+      body {
+        font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f9fafb;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .chat-container {
+        width: 100%;
+        max-width: 600px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        padding: 16px;
+        background: #2563eb;
+        color: white;
+        font-size: 1.25rem;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px;
+        background: #f3f4f6;
+      }
+
+      button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #1e40af;
+      }
+
+      #log {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        background: #f9fafb;
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+
+      #log div {
+        margin-bottom: 8px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        max-width: 75%;
+        word-wrap: break-word;
+      }
+
+      #log div:nth-child(odd) {
+        background: #e5e7eb;
+        align-self: flex-start;
+      }
+
+      #log div:nth-child(even) {
+        background: #dbeafe;
+        align-self: flex-end;
+      }
+
+      .input-area {
+        display: flex;
+        padding: 12px;
+        background: #f3f4f6;
+        border-top: 1px solid #e5e7eb;
+        gap: 10px;
+      }
+
+      #input {
+        flex: 1;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        outline: none;
+        font-size: 1rem;
+      }
+
+      #input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+      }
+
+      #send {
+        background: #2563eb;
+        color: white;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <header>💬 Real Time Chat App</header>
+
+      <div class="controls">
+        <button id="connect">Connect</button>
+        <button id="disconnect" style="background: #ef4444">Disconnect</button>
+      </div>
+
+      <div id="log"></div>
+
+      <div class="input-area">
+        <input id="input" placeholder="Type a message…" />
+        <button id="send">Send</button>
+      </div>
+    </div>
+
+    <script>
+      let ws;
+      const log = (m) => {
+        const el = document.getElementById("log");
+        const msgEl = document.createElement("div");
+        msgEl.textContent = m;
+        el.appendChild(msgEl);
+        el.scrollTop = el.scrollHeight;
+      };
+
+      document.getElementById("connect").onclick = () => {
+        if (ws && ws.readyState === WebSocket.OPEN) return;
+        ws = new WebSocket(`ws://${location.host}/ws`);
+        ws.onopen = () => log("⚡ connected, waiting to pair…");
+        ws.onmessage = (e) => log("👤 " + e.data);
+        ws.onclose = () => log("⛔ disconnected");
+      };
+
+      document.getElementById("disconnect").onclick = () => ws && ws.close();
+
+      document.getElementById("send").onclick = () => {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        const val = document.getElementById("input").value;
+        if (val) {
+          ws.send(val);
+          log("You: " + val);
+          document.getElementById("input").value = "";
+        }
+      };
+
+      document.getElementById("input").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("send").click();
+      });
+    </script>
+  </body>
+</html>
