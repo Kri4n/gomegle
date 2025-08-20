@@ -5,11 +5,11 @@ func pair(a, b *Client) {
 	b.Partner = a
 	// Soft notifications
 	select {
-	case a.Send <- []byte("Paired! Say Hi."):
+	case a.Send <- []byte("Matched! Say Hi."):
 	default:
 	}
 	select {
-	case b.Send <- []byte("Paired! Say Hi."):
+	case b.Send <- []byte("Matched! Say Hi."):
 	default:
 	}
 }

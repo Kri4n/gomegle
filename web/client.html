@@ -18,13 +18,14 @@
 
       .chat-container {
         width: 100%;
-        max-width: 600px;
+        max-width: 90%;
         background: #ffffff;
         border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 14px 20px rgba(0, 0, 0, 0.05);
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        height: 40em;
       }
 
       header {
@@ -44,7 +45,8 @@
         background: #f3f4f6;
       }
 
-      button {
+      #connect,
+      #send {
         background: #2563eb;
         color: white;
         border: none;
@@ -55,8 +57,39 @@
         transition: background 0.2s;
       }
 
-      button:hover {
+      #disconnect {
+        background: #a9422e;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+
+      #skip {
+        background: #099609;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+
+      #send:hover,
+      #connect:hover {
         background: #1e40af;
+      }
+
+      #disconnect:hover {
+        background: #7b3c14;
+      }
+
+      #skip:hover {
+        background: #286e08;
       }
 
       #log {
@@ -66,13 +99,14 @@
         background: #f9fafb;
         font-size: 0.95rem;
         line-height: 1.4;
+        max-height: 400px;
       }
 
       #log div {
         margin-bottom: 8px;
         padding: 10px 14px;
         border-radius: 12px;
-        max-width: 75%;
+        max-width: 100%;
         word-wrap: break-word;
       }
 
@@ -88,7 +122,7 @@
 
       .input-area {
         display: flex;
-        padding: 12px;
+        padding: 2rem;
         background: #f3f4f6;
         border-top: 1px solid #e5e7eb;
         gap: 10px;
@@ -107,14 +141,6 @@
         border-color: #2563eb;
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
       }
-
-      #send {
-        background: #2563eb;
-        color: white;
-        border-radius: 8px;
-        padding: 10px 16px;
-        font-weight: 500;
-      }
     </style>
   </head>
   <body>
@@ -122,8 +148,9 @@
       <header>💬 Real Time Chat App</header>
 
       <div class="controls">
-        <button id="connect">Connect</button>
-        <button id="disconnect" style="background: #ef4444">Disconnect</button>
+        <button id="connect">New Chat</button>
+        <button id="disconnect">Stop</button>
+        <button id="skip">Skip</button>
       </div>
 
       <div id="log"></div>
@@ -147,12 +174,19 @@
       document.getElementById("connect").onclick = () => {
         if (ws && ws.readyState === WebSocket.OPEN) return;
         ws = new WebSocket(`ws://${location.host}/ws`);
-        ws.onopen = () => log("⚡ connected, waiting to pair…");
+        ws.onopen = () => log("Finding match...");
         ws.onmessage = (e) => log("👤 " + e.data);
         ws.onclose = () => log("⛔ disconnected");
       };
 
       document.getElementById("disconnect").onclick = () => ws && ws.close();
+
+      document.getElementById("skip").onclick = () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send("/next");
+          log("⏭️ You skipped your partner… searching again.");
+        }
+      };
 
       document.getElementById("send").onclick = () => {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;

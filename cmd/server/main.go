@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"realtimechatserver/internal/server"
@@ -23,6 +24,15 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/client.html")
+	})
+
+	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		s := h.Snapshot()
+		out := fmt.Sprintf(
+			"connected %d\nwaiting %d\npaired %d\n",
+			s.Connected, s.Waiting, s.Paired,
+		)
+		w.Write([]byte(out))
 	})
 
 	fs := http.FileServer(http.Dir("./web"))

@@ -18,6 +18,7 @@ type Client struct {
 	Conn *websocket.Conn
 	Send chan []byte
 	Partner *Client
+	LastActive time.Time
 }
 
 func (c *Client) ReadPump() {
@@ -25,7 +26,8 @@ func (c *Client) ReadPump() {
 		c.Hub.Unregister <- c
 		c.Conn.Close()
 	}()
-
+	
+	c.LastActive = time.Now()
 	c.Conn.SetReadLimit(maxMessageSize)
 	c.Conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.Conn.SetPongHandler(func(string) error {
@@ -40,9 +42,20 @@ func (c *Client) ReadPump() {
 			break
 		}
 
-		// forward message to partner if paired
-		if c.Partner != nil {
-			c.Partner.Send <- message
+		msgStr := string(message) 
+		if msgStr == "/next" {
+			// Skip request → unregister, then re-register.
+			c.Hub.Unregister <- c
+			c.Hub.Register <- c
+			continue
+		}
+
+		// Relay only to partner if paired
+		if p := c.Partner; p != nil {
+			select {
+			case p.Send <- message:
+			default:
+			}
 		}
 	}
 }
@@ -70,6 +83,11 @@ func (c *Client) WritePump() {
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
+		}
+
+		if time.Since(c.LastActive) > 5*time.Minute {
+			c.Hub.Unregister <- c
+			return
 		}
 	}
 
