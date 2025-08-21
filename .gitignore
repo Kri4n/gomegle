@@ -1,1 +1,25 @@
-./server.exe
+# Binaries
+server.exe
+*.exe
+*.out
+*.app
+
+# Build directories
+bin/
+pkg/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+*.swp
+*.swo
+
+# Go module vendoring (if used)
+vendor/
+
+# Environment / secrets (if you have .env or secret files)
+*.env
+configs/*.env
