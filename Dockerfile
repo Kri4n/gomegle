@@ -5,7 +5,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o chat-server ./cmd/server
 FROM alpine:3.20
-COPY --from=builder /app/server .
+COPY --from=builder /app/chat-server .
 EXPOSE 5040
 ENV PORT=5040
-ENTRYPOINT ["./server"]
+ENTRYPOINT ["./chat-server"]
