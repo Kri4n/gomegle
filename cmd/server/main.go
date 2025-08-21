@@ -62,7 +62,6 @@ func main() {
 
 	addr := ":" + port
 	log.Println("listening on", addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatal(err)
 	}
