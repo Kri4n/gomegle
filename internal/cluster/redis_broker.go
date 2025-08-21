@@ -40,12 +40,12 @@ func NewRedisBroker() (*RedisBroker, error) {
 	}
 
 	return &RedisBroker{
-		cli: r.NewClient(opt),
+		cli:    r.NewClient(opt),
 		nodeID: nodeID,
 	}, nil
 }
 
-func (b *RedisBroker) NodeID() string { return b.nodeID }
+func (b *RedisBroker) NodeID() string             { return b.nodeID }
 func (b *RedisBroker) OnDeliver(h func(Envelope)) { b.deliver = h }
 func (b *RedisBroker) Start(ctx context.Context) error {
 	// Subscribe to this node’s inbox channel.
@@ -60,7 +60,7 @@ func (b *RedisBroker) Start(ctx context.Context) error {
 			}
 		}
 	}()
-	return  nil
+	return nil
 }
 
 func (b *RedisBroker) Stop(ctx context.Context) error {
@@ -104,7 +104,7 @@ func (b *RedisBroker) SendToNode(ctx context.Context, nodeID string, env Envelop
 	return b.cli.Publish(ctx, nodeChanPrefix+nodeID, data).Err()
 }
 
-// --- helpers 
+// --- helpers
 func randHex(n int) string {
 	b := make([]byte, n)
 	_, _ = rand.Read(b)
@@ -112,27 +112,31 @@ func randHex(n int) string {
 }
 
 func encodeWaiting(clientID, nodeID string) string {
-	return clientID + "@" +	nodeID
+	return clientID + "@" + nodeID
 }
 
 func decodeWaiting(s string) (string, string) {
 	parts := strings.SplitN(s, "@", 2)
-	if len(parts) != 2 { return "", "" }
+	if len(parts) != 2 {
+		return "", ""
+	}
 	return parts[0], parts[1]
 }
 
 // tiny, human-readable envelope format: type|to|from|hexpayload
 func encodeEnvelope(e Envelope) string {
-	return strings.Join([] string{e.Type, e.ToID, e.FromID, hex.EncodeToString(e.Payload)}, "|")
+	return strings.Join([]string{e.Type, e.ToID, e.FromID, hex.EncodeToString(e.Payload)}, "|")
 }
 
 func decodeEnvelope(b []byte) (Envelope, error) {
 	s := string(b)
 	parts := strings.SplitN(s, "|", 4)
-	if len(parts) != 4 { return Envelope{}, errors.New("bad envelope") }
+	if len(parts) != 4 {
+		return Envelope{}, errors.New("bad envelope")
+	}
 	payload, err := hex.DecodeString(parts[3])
-	if err != nil { return Envelope{}, err }
-	return Envelope{ Type: parts[0], ToID: parts[1], FromID: parts[2], Payload: payload }, nil
+	if err != nil {
+		return Envelope{}, err
+	}
+	return Envelope{Type: parts[0], ToID: parts[1], FromID: parts[2], Payload: payload}, nil
 }
-
-

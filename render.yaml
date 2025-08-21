@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: gomegle
+    env: docker
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /metrics
+    region: singapore
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: gomegle-redis
+
+databases:
+  - name: gomegle-redis
+    plan: free
+    ipAllowList: []

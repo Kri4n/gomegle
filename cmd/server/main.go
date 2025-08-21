@@ -4,12 +4,29 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"realtimechatserver/internal/cluster"
 	"realtimechatserver/internal/server"
 	"realtimechatserver/internal/transport"
 )
 
 func main() {
 	h := server.NewHub()
+
+	// Cluster mode if REDIS_URL present
+	if os.Getenv("REDIS_URL") != "" {
+		rb, err := cluster.NewRedisBroker()
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := h.EnableCluster(rb); err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Cluster Mode On")
+	} else {
+		log.Println("Standalone Mode On")
+	}
+
 	go h.Run()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -38,8 +55,14 @@ func main() {
 	fs := http.FileServer(http.Dir("./web"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	addr := ":5040"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5040"
+	}
+
+	addr := ":" + port
 	log.Println("listening on", addr)
+	log.Fatal(http.ListenAndServe(addr, nil))
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatal(err)
 	}

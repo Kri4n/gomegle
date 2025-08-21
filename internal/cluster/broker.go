@@ -10,9 +10,9 @@ type MatchResult struct {
 
 // Envelope is what we publish between nodes.
 type Envelope struct {
-	Type string // "msg" | "notify" | "unpair"
-	ToID string // recipient client id (local to this node)
-	FromID string
+	Type    string // "msg" | "notify" | "unpair"
+	ToID    string // recipient client id (local to this node)
+	FromID  string
 	Payload []byte
 }
 

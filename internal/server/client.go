@@ -7,20 +7,20 @@ import (
 )
 
 const (
-	writeWait = 10 * time.Second
-	pongWait = 60 * time.Second
-	pingPeriod = (pongWait * 9) / 10
+	writeWait      = 10 * time.Second
+	pongWait       = 60 * time.Second
+	pingPeriod     = (pongWait * 9) / 10
 	maxMessageSize = 1024
 )
 
 type Client struct {
-	Hub *Hub
-	Conn *websocket.Conn
-	Send chan []byte
-	Partner *Client
+	Hub        *Hub
+	Conn       *websocket.Conn
+	Send       chan []byte
+	Partner    *Client
 	LastActive time.Time
-	ID string
-	NodeID string
+	ID         string
+	NodeID     string
 }
 
 func (c *Client) ReadPump() {
@@ -28,7 +28,7 @@ func (c *Client) ReadPump() {
 		c.Hub.Unregister <- c
 		c.Conn.Close()
 	}()
-	
+
 	c.LastActive = time.Now()
 	c.Conn.SetReadLimit(maxMessageSize)
 	c.Conn.SetReadDeadline(time.Now().Add(pongWait))
@@ -44,7 +44,7 @@ func (c *Client) ReadPump() {
 			break
 		}
 
-		msgStr := string(message) 
+		msgStr := string(message)
 		if msgStr == "/next" {
 			// Skip request → unregister, then re-register.
 			c.Hub.Unregister <- c
@@ -62,7 +62,6 @@ func (c *Client) ReadPump() {
 	}
 }
 
-
 func (c *Client) WritePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
@@ -70,7 +69,7 @@ func (c *Client) WritePump() {
 		c.Conn.Close()
 	}()
 	for {
-		select  {
+		select {
 		case message, ok := <-c.Send:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {

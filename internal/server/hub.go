@@ -17,7 +17,7 @@ type Hub struct {
 	broker cluster.Broker
 	ctx    context.Context
 	cancel context.CancelFunc
-	mu sync.RWMutex
+	mu     sync.RWMutex
 }
 
 type Stats struct {
@@ -29,13 +29,13 @@ type Stats struct {
 func NewHub() *Hub {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &Hub{
-		Register:   make(chan *Client),
-		Unregister: make(chan *Client),
-		Waiting:    make([]*Client, 0, 64),
+		Register:    make(chan *Client),
+		Unregister:  make(chan *Client),
+		Waiting:     make([]*Client, 0, 64),
 		clientsByID: make(map[string]*Client),
-		Stats:      &Stats{},
-		ctx: ctx,
-		cancel: cancel,
+		Stats:       &Stats{},
+		ctx:         ctx,
+		cancel:      cancel,
 	}
 }
 
@@ -47,7 +47,10 @@ func (h *Hub) EnableCluster(b cluster.Broker) error {
 		c := h.clientsByID[env.ToID]
 		h.mu.RUnlock()
 		if c != nil {
-			select { case c.Send <- env.Payload: default: }
+			select {
+			case c.Send <- env.Payload:
+			default:
+			}
 		}
 	})
 	return b.Start(h.ctx)
@@ -71,7 +74,9 @@ func (h *Hub) Run() {
 					h.Waiting = h.Waiting[1:]
 					pair(c, partner)
 					h.Stats.Paired++
-					if h.Stats.Waiting > 0 { h.Stats.Waiting-- }
+					if h.Stats.Waiting > 0 {
+						h.Stats.Waiting--
+					}
 				} else {
 					h.Waiting = append(h.Waiting, c)
 					h.Stats.Waiting++
@@ -93,13 +98,15 @@ func (h *Hub) Run() {
 					}
 				} else {
 					// partner is remote → set remote link only
-					c.Partner = &Client{ ID: res.PartnerClientID, NodeID: res.PartnerNodeID }
-					select { case c.Send <- []byte("🟢 Paired (remote)! Say hi."): default: }
+					c.Partner = &Client{ID: res.PartnerClientID, NodeID: res.PartnerNodeID}
+					select {
+					case c.Send <- []byte("🟢 Paired (remote)! Say hi."):
+					default:
+					}
 					h.Stats.Paired++
 				}
 
 			}
-			
 
 		case c := <-h.Unregister:
 			h.Stats.Connected--
