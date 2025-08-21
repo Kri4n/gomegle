@@ -19,6 +19,8 @@ type Client struct {
 	Send chan []byte
 	Partner *Client
 	LastActive time.Time
+	ID string
+	NodeID string
 }
 
 func (c *Client) ReadPump() {
