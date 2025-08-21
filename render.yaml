@@ -1,8 +1,10 @@
 services:
   - type: web
-    name: gomegle
+    name: your-app
     env: go
     region: singapore
     buildCommand: go build -o server ./cmd/server
     startCommand: ./server
-    goVersion: 1.25
+    envVars:
+      - key: GOTOOLCHAIN
+        value: 1.25
