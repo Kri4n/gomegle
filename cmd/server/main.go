@@ -57,7 +57,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "5040"
+		port = "8080"
 	}
 
 	addr := ":" + port
