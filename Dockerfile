@@ -9,6 +9,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /chat ./cmd/server
 
 # Minimal runtime
 FROM gcr.io/distroless/base-debian12
-COPY --from=builder /chat /chat
+COPY --from=builder /app/server .
+COPY --from=builder /app/web ./web
 EXPOSE 8080
 ENTRYPOINT ["/chat"]
