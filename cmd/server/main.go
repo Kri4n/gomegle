@@ -5,27 +5,21 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"realtimechatserver/internal/cluster"
 	"realtimechatserver/internal/server"
 	"realtimechatserver/internal/transport"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	h := server.NewHub()
+	_ = godotenv.Load()
 
-	// Cluster mode if REDIS_URL present
-	if os.Getenv("REDIS_URL") != "" {
-		rb, err := cluster.NewRedisBroker()
-		if err != nil {
-			log.Fatal(err)
-		}
-		if err := h.EnableCluster(rb); err != nil {
-			log.Fatal(err)
-		}
-		log.Println("Cluster Mode On")
-	} else {
-		log.Println("Standalone Mode On")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
+
+	h := server.NewHub()
 
 	go h.Run()
 
@@ -54,11 +48,6 @@ func main() {
 
 	fs := http.FileServer(http.Dir("./web"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
 
 	addr := ":" + port
 	log.Println("listening on", addr)
