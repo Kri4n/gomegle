@@ -1,15 +1,29 @@
-# Build stage
+# Use the official Go image as a build stage
 FROM golang:1.25 AS builder
+
 WORKDIR /app
+
+# Copy go mod and download deps first (cache layer)
 COPY go.mod go.sum ./
 RUN go mod download
+
+# Copy the source code
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o /chat ./cmd/server
 
+# Build the binary
+RUN go build -o chatserver ./cmd/server
 
-# Minimal runtime
-FROM gcr.io/distroless/base-debian12
-COPY --from=builder /app/server .
+# Final lightweight image
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+# Copy the binary from builder
+COPY --from=builder /app/chatserver .
+
+# Copy static files (client.html, etc.)
 COPY --from=builder /app/web ./web
+
 EXPOSE 8080
-ENTRYPOINT ["/chat"]
+
+CMD ["./chatserver"]
