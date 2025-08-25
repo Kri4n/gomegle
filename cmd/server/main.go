@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"gomegle/internal/server"
+	"gomegle/internal/transport"
 	"log"
 	"net/http"
 	"os"
-	"realtimechatserver/internal/server"
-	"realtimechatserver/internal/transport"
 
 	"github.com/joho/godotenv"
 )

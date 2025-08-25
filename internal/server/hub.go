@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"realtimechatserver/internal/cluster"
+	"gomegle/internal/cluster"
 	"sync"
 )
 
