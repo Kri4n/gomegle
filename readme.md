@@ -18,8 +18,8 @@ _A simple Omegle-style random chat server built with Go + WebSockets._
 
 ## To Build Image
 
-docker build -t chatserver .
+docker build -t gomegle .
 
 ## To Run the Image
 
-docker run -p 8080:8080 chatserver
+docker run -p 8080:8080 gomegle

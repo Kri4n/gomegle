@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Real Time Chat App</title>
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico" />
     <style>
       body {
         font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -110,13 +111,14 @@
         word-wrap: break-word;
       }
 
-      #log div:nth-child(odd) {
-        background: #e5e7eb;
+      #log .received {
+        background: #dbeafe;
         align-self: flex-start;
       }
 
-      #log div:nth-child(even) {
-        background: #dbeafe;
+      #log .sent {
+        background: #e5e7eb;
+        color: black;
         align-self: flex-end;
       }
 
@@ -165,10 +167,12 @@
       let ws;
       const protocol = location.protocol === "https:" ? "wss:" : "ws:";
 
-      const log = (m) => {
+      const log = (m, type = "system") => {
         const el = document.getElementById("log");
         const msgEl = document.createElement("div");
         msgEl.textContent = m;
+        if (type === "sent") msgEl.classList.add("sent");
+        else if (type === "received") msgEl.classList.add("received");
         el.appendChild(msgEl);
         el.scrollTop = el.scrollHeight;
       };
@@ -177,7 +181,7 @@
         if (ws && ws.readyState === WebSocket.OPEN) return;
         ws = new WebSocket(`${protocol}//${location.host}/ws`);
         ws.onopen = () => log("Finding match...");
-        ws.onmessage = (e) => log("👤 " + e.data);
+        ws.onmessage = (e) => log("👤 " + e.data, "received");
         ws.onclose = () => log("⛔ disconnected");
       };
 
@@ -195,7 +199,7 @@
         const val = document.getElementById("input").value;
         if (val) {
           ws.send(val);
-          log("You: " + val);
+          log("You: " + val, "sent");
           document.getElementById("input").value = "";
         }
       };
