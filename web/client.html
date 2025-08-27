@@ -10,7 +10,7 @@
         font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
         margin: 0;
         padding: 0;
-        background: #f9fafb;
+        background: #111827;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -59,7 +59,7 @@
       }
 
       #disconnect {
-        background: #a9422e;
+        background: #2563eb;
         color: white;
         border: none;
         padding: 10px 16px;
@@ -70,7 +70,7 @@
       }
 
       #skip {
-        background: #099609;
+        background: #2563eb;
         color: white;
         border: none;
         padding: 10px 16px;
@@ -86,11 +86,11 @@
       }
 
       #disconnect:hover {
-        background: #7b3c14;
+        background: #1e40af;
       }
 
       #skip:hover {
-        background: #286e08;
+        background: #1e40af;
       }
 
       #log {
@@ -156,6 +156,7 @@
       </div>
 
       <div id="log"></div>
+      <div id="typing"></div>
 
       <div class="input-area">
         <input id="input" placeholder="Type a message…" />
@@ -165,6 +166,8 @@
 
     <script>
       let ws;
+      let typingTimeout;
+
       const protocol = location.protocol === "https:" ? "wss:" : "ws:";
 
       const log = (m, type = "system") => {
@@ -181,7 +184,16 @@
         if (ws && ws.readyState === WebSocket.OPEN) return;
         ws = new WebSocket(`${protocol}//${location.host}/ws`);
         ws.onopen = () => log("Finding match...");
-        ws.onmessage = (e) => log("👤 " + e.data, "received");
+        ws.onmessage = (e) => {
+          if (e.data === "/typing") {
+            showTyping();
+          } else if (e.data === "/stoptyping") {
+            hideTyping();
+          } else {
+            log("👤 " + e.data, "received");
+            hideTyping(); // auto hide when message arrives
+          }
+        };
         ws.onclose = () => log("⛔ disconnected");
       };
 
@@ -207,6 +219,32 @@
       document.getElementById("input").addEventListener("keydown", (e) => {
         if (e.key === "Enter") document.getElementById("send").click();
       });
+
+      document.getElementById("input").addEventListener("input", () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send("/typing");
+          clearTimeout(typingTimeout);
+          typingTimeout = setTimeout(() => ws.send("/stoptyping"), 1000);
+        }
+      });
+
+      function showTyping() {
+        let indicator = document.getElementById("typing-indicator");
+        if (!indicator) {
+          indicator = document.createElement("div");
+          indicator.id = "typing-indicator";
+          indicator.textContent = "👤 is typing...";
+          indicator.style.fontStyle = "italic";
+          document.getElementById("log").appendChild(indicator);
+          document.getElementById("log").scrollTop =
+            document.getElementById("log").scrollHeight;
+        }
+      }
+
+      function hideTyping() {
+        const indicator = document.getElementById("typing-indicator");
+        if (indicator) indicator.remove();
+      }
     </script>
   </body>
 </html>
