@@ -147,7 +147,11 @@
   </head>
   <body>
     <div class="chat-container">
-      <header>Gomegle 💬</header>
+      <header>
+        Gomegle 💬 
+        <span id="online-count" >
+        0 Online
+      </header>
 
       <div class="controls">
         <button id="connect">New Chat</button>
@@ -245,6 +249,31 @@
         const indicator = document.getElementById("typing-indicator");
         if (indicator) indicator.remove();
       }
+
+
+      function fetchMetrics() {
+        fetch("/metrics")
+          .then((res) => res.text())
+          .then((text) => {
+            // Parse total_online line
+            const lines = text.split("\n");
+            const totalLine = lines.find((line) => line.startsWith("total_online"));
+            if (totalLine) {
+              const count = totalLine.split(" ")[1];
+              if (count < 0) {
+                count = 0
+              }
+              document.getElementById("online-count").textContent = `${count} Online`;
+            }
+          })
+          .catch((err) => console.error("Failed to fetch metrics", err));
+      }
+
+      // update every 5s
+      setInterval(fetchMetrics, 5000);
+      fetchMetrics(); // run immediately on load
+
+
     </script>
   </body>
 </html>

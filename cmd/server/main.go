@@ -39,9 +39,10 @@ func main() {
 
 	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		s := h.Snapshot()
+		totalOnline := s.Connected // already tracked
 		out := fmt.Sprintf(
-			"connected %d\nwaiting %d\npaired %d\n",
-			s.Connected, s.Waiting, s.Paired,
+			"connected %d\nwaiting %d\npaired %d\ntotal_online %d\n",
+			s.Connected, s.Waiting, s.Paired, totalOnline,
 		)
 		w.Write([]byte(out))
 	})
